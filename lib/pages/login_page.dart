@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../services/auth_service.dart';
 import '../utils/app_colors.dart';
 import 'main_navigation_page.dart';
 
@@ -18,7 +19,11 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController passwordController =
       TextEditingController();
 
+  final AuthService authService = AuthService();
+
   bool obscurePassword = true;
+  bool isLoading = false;
+  String? errorMessage;
 
   @override
   void dispose() {
@@ -27,25 +32,63 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void login() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const MainNavigationPage(),
-      ),
-    );
+  Future<void> login() async {
+    final email = usernameController.text.trim();
+    final password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() {
+        errorMessage = 'Veuillez remplir tous les champs.';
+      });
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final result = await authService.login(email, password);
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MainNavigationPage(),
+          ),
+        );
+      } else {
+        setState(() {
+          errorMessage =
+              result['message'] ?? 'Identifiants incorrects.';
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        errorMessage = 'Connexion impossible. Vérifiez le serveur.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
-
             child: Center(
               child: Container(
                 width: 380,
@@ -53,7 +96,6 @@ class _LoginPageState extends State<LoginPage> {
                   horizontal: 25,
                   vertical: 30,
                 ),
-
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(22),
@@ -65,12 +107,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ],
                 ),
-
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-
-                    // ICONE
                     Container(
                       width: 65,
                       height: 65,
@@ -84,10 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                         size: 35,
                       ),
                     ),
-
                     const SizedBox(height: 18),
-
-                    // TITRE
                     const Text(
                       'Bienvenue',
                       style: TextStyle(
@@ -96,9 +132,7 @@ class _LoginPageState extends State<LoginPage> {
                         color: AppColors.textDark,
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
                     const Text(
                       'Connectez-vous pour voir mon CV',
                       textAlign: TextAlign.center,
@@ -107,27 +141,24 @@ class _LoginPageState extends State<LoginPage> {
                         color: AppColors.textGrey,
                       ),
                     ),
-
                     const SizedBox(height: 28),
 
-                    // EMAIL
                     const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Email ou identifiant',
+                        'Adresse email',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
                     TextField(
                       controller: usernameController,
+                      keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        hintText: 'Entrez votre identifiant',
+                        hintText: 'Entrez votre adresse email',
                         prefixIcon: const Icon(
                           Icons.email_outlined,
                           size: 20,
@@ -147,10 +178,8 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 18),
 
-                    // MOT DE PASSE
                     const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -161,9 +190,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
                     TextField(
                       controller: passwordController,
                       obscureText: obscurePassword,
@@ -201,14 +228,24 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 25),
+                    if (errorMessage != null) ...[
+                      const SizedBox(height: 15),
+                      Text(
+                        errorMessage!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
 
-                    // BOUTON
+                    const SizedBox(height: 25),
                     SizedBox(
                       width: double.infinity,
                       height: 48,
                       child: ElevatedButton(
-                        onPressed: login,
+                        onPressed: isLoading ? null : login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.secondary,
                           foregroundColor: Colors.white,
@@ -217,18 +254,25 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Se connecter',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Se connecter',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     const Text(
                       'CV MARCELIN LUHEKA',
                       style: TextStyle(

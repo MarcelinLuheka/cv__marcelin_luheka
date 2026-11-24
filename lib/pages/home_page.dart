@@ -9,7 +9,6 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       appBar: AppBar(
         title: const Text(
           'Mon Curriculum Vitae',
@@ -19,11 +18,9 @@ class HomePage extends StatelessWidget {
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
-
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [
-
           // IDENTITE
           Container(
             padding: const EdgeInsets.all(25),
@@ -33,15 +30,28 @@ class HomePage extends StatelessWidget {
             ),
             child: Column(
               children: [
-                const CircleAvatar(
+                // PHOTO DE PROFIL
+                CircleAvatar(
                   radius: 55,
                   backgroundColor: Colors.white,
-                  child: Text(
-                    'ML',
-                    style: TextStyle(
-                      fontSize: 35,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/famille/moi-marcelin.jpg',
+                      width: 110,
+                      height: 110,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Text(
+                            'ML',
+                            style: TextStyle(
+                              fontSize: 35,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -95,7 +105,6 @@ class HomePage extends StatelessWidget {
 
           const SizedBox(height: 22),
 
-          // PROFIL
           const CVSection(
             title: 'PROFIL PROFESSIONNEL',
             icon: Icons.person_outline,
@@ -111,7 +120,6 @@ class HomePage extends StatelessWidget {
                 'communautaires et technologiques.',
           ),
 
-          // FORMATION
           const CVSection(
             title: 'FORMATION ACADÉMIQUE',
             icon: Icons.school_outlined,
@@ -123,7 +131,6 @@ class HomePage extends StatelessWidget {
                 'Situation : Études en cours.',
           ),
 
-          // EXPERIENCES
           const CVSection(
             title: 'EXPÉRIENCES ET PROJETS',
             icon: Icons.work_outline,
@@ -150,7 +157,6 @@ class HomePage extends StatelessWidget {
                 'd’environnements informatiques.',
           ),
 
-          // COMPETENCES
           const CVSection(
             title: 'COMPÉTENCES TECHNIQUES',
             icon: Icons.computer,
@@ -165,7 +171,6 @@ class HomePage extends StatelessWidget {
                 '• Microsoft Word, Excel et PowerPoint',
           ),
 
-          // LANGUES
           const CVSection(
             title: 'COMPÉTENCES LINGUISTIQUES',
             icon: Icons.language,
@@ -177,7 +182,6 @@ class HomePage extends StatelessWidget {
                 '• Allemand : Courant',
           ),
 
-          // CENTRES D'INTERET
           const CVSection(
             title: 'CENTRES D’INTÉRÊT',
             icon: Icons.favorite_outline,
@@ -210,7 +214,6 @@ class HomePage extends StatelessWidget {
   }
 }
 
-
 // WIDGET REUTILISABLE POUR LES SECTIONS DU CV
 
 class CVSection extends StatelessWidget {
@@ -239,7 +242,6 @@ class CVSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Row(
               children: [
                 Icon(
@@ -247,9 +249,7 @@ class CVSection extends StatelessWidget {
                   color: AppColors.primary,
                   size: 25,
                 ),
-
                 const SizedBox(width: 12),
-
                 Expanded(
                   child: Text(
                     title,
@@ -262,9 +262,7 @@ class CVSection extends StatelessWidget {
                 ),
               ],
             ),
-
             const Divider(height: 25),
-
             Text(
               content,
               style: const TextStyle(
